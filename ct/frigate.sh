@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-source <(curl -s https://raw.githubusercontent.com/remz1337/Proxmox/remz/misc/build.func)
+source <(curl -s https://raw.githubusercontent.com/remz1337/Proxmox/beta/misc/build.func)
 # Copyright (c) 2021-2024 remz1337
 # Author: remz1337
 # License: MIT

@@ -628,10 +628,10 @@ build_container() {
   TEMP_DIR=$(mktemp -d)
   pushd $TEMP_DIR >/dev/null
   if [ "$var_os" == "alpine" ]; then
-    export FUNCTIONS_FILE_PATH="$(curl -s https://raw.githubusercontent.com/remz1337/Proxmox/remz/misc/alpine-install.func)"
+    export FUNCTIONS_FILE_PATH="$(curl -s https://raw.githubusercontent.com/remz1337/Proxmox/beta/misc/alpine-install.func)"
   else
-    export FUNCTIONS_FILE_PATH="$(curl -s https://raw.githubusercontent.com/remz1337/Proxmox/remz/misc/install.func)"
-    export NVIDIA_FUNCTIONS_FILE_PATH="$(curl -s https://raw.githubusercontent.com/remz1337/Proxmox/remz/misc/nvidia.func)"
+    export FUNCTIONS_FILE_PATH="$(curl -s https://raw.githubusercontent.com/remz1337/Proxmox/beta/misc/install.func)"
+    export NVIDIA_FUNCTIONS_FILE_PATH="$(curl -s https://raw.githubusercontent.com/remz1337/Proxmox/beta/misc/nvidia.func)"
   fi
   export CACHER="$APT_CACHER"
   export CACHER_IP="$APT_CACHER_IP"
@@ -666,7 +666,7 @@ build_container() {
   # Check for missing required environment variables
   phs_validate_required_config
   # This executes create_lxc.sh and creates the container and .conf file
-  bash -c "$(wget -qLO - https://raw.githubusercontent.com/remz1337/Proxmox/remz/ct/create_lxc.sh)" || exit
+  bash -c "$(wget -qLO - https://raw.githubusercontent.com/remz1337/Proxmox/beta/ct/create_lxc.sh)" || exit
 
   LXC_CONFIG=/etc/pve/lxc/${CTID}.conf
   if [ "$CT_TYPE" == "0" ]; then
@@ -731,16 +731,16 @@ EOF'
     pct exec "$CTID" -- ash -c "apk add bash >/dev/null"
   fi
   # This executes post_create_lxc.sh for additional configurations (default user, shared mount directory, postfix satellite)
-  #bash -c "$(wget -qLO - https://raw.githubusercontent.com/remz1337/Proxmox/remz/ct/post_create_lxc.sh)" || exit
-  source <(curl -s https://raw.githubusercontent.com/remz1337/Proxmox/remz/ct/post_create_lxc.sh)
-  lxc-attach -n "$CTID" -- bash -c "$(wget -qLO - https://raw.githubusercontent.com/remz1337/Proxmox/remz/install/$var_install.sh)" || exit
+  #bash -c "$(wget -qLO - https://raw.githubusercontent.com/remz1337/Proxmox/beta/ct/post_create_lxc.sh)" || exit
+  source <(curl -s https://raw.githubusercontent.com/remz1337/Proxmox/beta/ct/post_create_lxc.sh)
+  lxc-attach -n "$CTID" -- bash -c "$(wget -qLO - https://raw.githubusercontent.com/remz1337/Proxmox/beta/install/$var_install.sh)" || exit
 
 }
 
 # This function sets the description of the container.
 description() {
   IP=$(pct exec "$CTID" ip a s dev eth0 | awk '/inet / {print $2}' | cut -d/ -f1)
-  pct set "$CTID" -description "<div align='center'><a href='https://Helper-Scripts.com' target='_blank' rel='noopener noreferrer'><img src='https://raw.githubusercontent.com/remz1337/Proxmox/remz/misc/images/logo-81x112.png'/></a>
+  pct set "$CTID" -description "<div align='center'><a href='https://Helper-Scripts.com' target='_blank' rel='noopener noreferrer'><img src='https://raw.githubusercontent.com/remz1337/Proxmox/beta/misc/images/logo-81x112.png'/></a>
 
   # ${APP} LXC
 

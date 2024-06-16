@@ -9,7 +9,7 @@ default_setup() {
   msg_info "Setting up Container"
   pct exec $CTID -- /bin/bash -c "apt update -qq &>/dev/null"
   pct exec $CTID -- /bin/bash -c "apt install -qqy curl &>/dev/null"
-  lxc-attach -n "$CTID" -- bash -c "source <(curl -s https://raw.githubusercontent.com/remz1337/Proxmox/remz/misc/install.func) && color && verb_ip6 && catch_errors && setting_up_container && network_check && update_os" || exit
+  lxc-attach -n "$CTID" -- bash -c "source <(curl -s https://raw.githubusercontent.com/remz1337/Proxmox/beta/misc/install.func) && color && verb_ip6 && catch_errors && setting_up_container && network_check && update_os" || exit
   msg_ok "Set up Container"
 }
 
@@ -119,7 +119,7 @@ if [[ "${PHS_POSTFIX_SAT}" == "yes" ]]; then
 fi
 
 if [[ "${NVIDIA_PASSTHROUGH}" == "yes" ]]; then
-  source <(curl -s https://raw.githubusercontent.com/remz1337/Proxmox/remz/misc/nvidia.func)
+  source <(curl -s https://raw.githubusercontent.com/remz1337/Proxmox/beta/misc/nvidia.func)
   if [ -n "$SPINNER_PID" ] && ps -p $SPINNER_PID > /dev/null; then kill $SPINNER_PID > /dev/null; fi
   check_nvidia_drivers
   gpu_id=$(select_nvidia_gpu)
