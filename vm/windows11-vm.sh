@@ -61,7 +61,7 @@ function cleanup() {
 
 TEMP_DIR=$(mktemp -d)
 pushd $TEMP_DIR >/dev/null
-if whiptail --backtitle "Proxmox VE Helper Scripts" --title "Ubuntu 24.04 VM" --yesno "This will create a New Ubuntu 24.04 VM. Proceed?" 10 58; then
+if whiptail --backtitle "Proxmox VE Helper Scripts" --title "Windows 11 VM" --yesno "This will create a New Windows 11 VM. Proceed?" 10 58; then
   :
 else
   header_info && echo -e "⚠ User exited script \n" && exit
@@ -135,7 +135,7 @@ function default_settings() {
   FORMAT=",efitype=4m"
   MACHINE=""
   DISK_CACHE=""
-  HN="ubuntu"
+  HN="win11"
   CPU_TYPE=""
   CORE_COUNT="2"
   RAM_SIZE="2048"
@@ -156,7 +156,7 @@ function default_settings() {
   echo -e "${DGN}Using VLAN: ${BGN}Default${CL}"
   echo -e "${DGN}Using Interface MTU Size: ${BGN}Default${CL}"
   echo -e "${DGN}Start VM when completed: ${BGN}no${CL}"
-  echo -e "${BL}Creating an Ubuntu 24.04 VM using the above default settings${CL}"
+  echo -e "${BL}Creating a Windows 11 VM using the above default settings${CL}"
 }
 
 function advanced_settings() {
@@ -209,9 +209,9 @@ function advanced_settings() {
     exit-script
   fi
 
-  if VM_NAME=$(whiptail --backtitle "Proxmox VE Helper Scripts" --inputbox "Set Hostname" 8 58 ubuntu --title "HOSTNAME" --cancel-button Exit-Script 3>&1 1>&2 2>&3); then
+  if VM_NAME=$(whiptail --backtitle "Proxmox VE Helper Scripts" --inputbox "Set Hostname" 8 58 win11 --title "HOSTNAME" --cancel-button Exit-Script 3>&1 1>&2 2>&3); then
     if [ -z $VM_NAME ]; then
-      HN="ubuntu"
+      HN="win11"
       echo -e "${DGN}Using Hostname: ${BGN}$HN${CL}"
     else
       HN=$(echo ${VM_NAME,,} | tr -d ' ')
@@ -315,8 +315,8 @@ function advanced_settings() {
     START_VM="no"
   fi
 
-  if (whiptail --backtitle "Proxmox VE Helper Scripts" --title "ADVANCED SETTINGS COMPLETE" --yesno "Ready to create an Ubuntu 24.04 VM?" --no-button Do-Over 10 58); then
-    echo -e "${RD}Creating an Ubuntu 24.04 VM using the above advanced settings${CL}"
+  if (whiptail --backtitle "Proxmox VE Helper Scripts" --title "ADVANCED SETTINGS COMPLETE" --yesno "Ready to create a Windows 11 VM?" --no-button Do-Over 10 58); then
+    echo -e "${RD}Creating a Windows 11 VM using the above advanced settings${CL}"
   else
     header_info
     echo -e "${RD}Using Advanced Settings${CL}"
@@ -333,6 +333,47 @@ function start_script() {
     header_info
     echo -e "${RD}Using Advanced Settings${CL}"
     advanced_settings
+  fi
+}
+
+function download_iso() {
+  msg_info "Retrieving the URL for the Windows 11 Disk Image"
+  URL=https://mirror.mika.moe/files/Win11_English_x64.iso
+  sleep 2
+  msg_ok "${CL}${BL}${URL}${CL}"
+  cd /var/lib/vz/template/iso/
+  wget -q --show-progress $URL -O Win11_English_x64.iso
+  echo -en "\e[1A\e[0K"
+  FILE=$(basename $URL)
+  msg_ok "Downloaded ${CL}${BL}${FILE}${CL}"
+}
+
+function select_iso() {
+  declare -a ISO_MENU
+  OFFSET=2
+  MSG_MAX_LENGTH=0
+
+  for entry in /var/lib/vz/template/iso/*.iso; do
+    name=$(basename $entry)
+    if [[ $((${#name} + $OFFSET)) -gt ${MSG_MAX_LENGTH:-} ]]; then
+      MSG_MAX_LENGTH=$((${#name} + $OFFSET))
+    fi
+    ISO_MENU+=("$name" "" "OFF")
+  done
+
+  if [ ${#ISO_MENU[@]} -eq 0 ]; then
+    echo "No ISO found."
+    exit-script
+  else
+    # Select ISO
+    ISO=""
+    while [ -z "${ISO:+x}" ]; do
+      ISO=$(whiptail --backtitle "Proxmox VE Helper Scripts" --title "Windows 11 ISO" --radiolist \
+      "Which ISO would you like to use?\nTo make a selection, use the Spacebar.\n" \
+      16 $(($MSG_MAX_LENGTH + 23)) 6 \
+      "${ISO_MENU[@]}" 3>&1 1>&2 2>&3) || exit "Menu aborted."
+    done
+    printf "$ISO"
   fi
 }
 
@@ -371,38 +412,22 @@ fi
 msg_ok "Using ${CL}${BL}$STORAGE${CL} ${GN}for Storage Location."
 msg_ok "Virtual Machine ID is ${CL}${BL}$VMID${CL}."
 
-
-
-declare -a ISO_MENU
-OFFSET=2
-MSG_MAX_LENGTH=0
-
-for entry in /var/lib/vz/template/iso/*.iso; do
-  name=$(basename $entry)
-  if [[ $((${#name} + $OFFSET)) -gt ${MSG_MAX_LENGTH:-} ]]; then
-    MSG_MAX_LENGTH=$((${#name} + $OFFSET))
+REUSE_ISO="no"
+if [ -f /var/lib/vz/template/iso/Win11_English_x64.iso ]; then
+  echo "Win11_English_x64.iso already exists."
+  if (whiptail --backtitle "Proxmox VE Helper Scripts" --title "Windows 11 ISO" --yesno "Reuse existing ISO?" 10 58); then
+    echo -e "Reusing existing ISO."
+    REUSE_ISO="yes"
   fi
-  ISO_MENU+=("$name" "" "OFF")
-done
-
-
-
-if [ ${#ISO_MENU[@]} -eq 0 ]; then
-  echo "No ISO found."
-  #exit-script
-else
-  # Select ISO
-  ISO=""
-  while [ -z "${ISO:+x}" ]; do
-    ISO=$(whiptail --backtitle "Proxmox VE Helper Scripts" --title "Windows 11 ISO" --radiolist \
-    "Which ISO would you like to use?\nTo make a selection, use the Spacebar.\n" \
-    16 $(($MSG_MAX_LENGTH + 23)) 6 \
-    "${ISO_MENU[@]}" 3>&1 1>&2 2>&3) || exit "Menu aborted."
-  done
-  printf "$ISO"
 fi
 
-
+if [ $REUSE_ISO == "no" ]; then
+  if (whiptail --backtitle "Proxmox VE Helper Scripts" --defaultno --title "Windows 11 ISO" --yesno "Select Existing ISO?" 10 58); then
+    select_iso
+  else
+    download_iso
+  fi
+fi
 
 
 exit
@@ -412,14 +437,14 @@ exit
 
 
 
-msg_info "Retrieving the URL for the Windows 11 Disk Image"
-URL=https://mirror.mika.moe/files/Win11_English_x64.iso
-sleep 2
-msg_ok "${CL}${BL}${URL}${CL}"
-wget -q --show-progress $URL
-echo -en "\e[1A\e[0K"
-FILE=$(basename $URL)
-msg_ok "Downloaded ${CL}${BL}${FILE}${CL}"
+# msg_info "Retrieving the URL for the Windows 11 Disk Image"
+# URL=https://mirror.mika.moe/files/Win11_English_x64.iso
+# sleep 2
+# msg_ok "${CL}${BL}${URL}${CL}"
+# wget -q --show-progress $URL
+# echo -en "\e[1A\e[0K"
+# FILE=$(basename $URL)
+# msg_ok "Downloaded ${CL}${BL}${FILE}${CL}"
 
 STORAGE_TYPE=$(pvesm status -storage $STORAGE | awk 'NR>1 {print $2}')
 case $STORAGE_TYPE in
@@ -443,7 +468,7 @@ for i in {0,1}; do
   eval DISK${i}_REF=${STORAGE}:${DISK_REF:-}${!disk}
 done
 
-msg_info "Creating a Ubuntu 24.04 VM"
+msg_info "Creating a Windows 11 VM"
 qm create $VMID -agent 1${MACHINE} -tablet 0 -localtime 1 -bios ovmf${CPU_TYPE} -cores $CORE_COUNT -memory $RAM_SIZE \
   -name $HN -tags proxmox-helper-scripts -net0 virtio,bridge=$BRG,macaddr=$MAC$VLAN$MTU -onboot 1 -ostype l26 -scsihw virtio-scsi-pci
 pvesm alloc $STORAGE $VMID $DISK0 4M 1>&/dev/null
@@ -456,15 +481,15 @@ qm set $VMID \
   -serial0 socket \
   -description "<div align='center'><a href='https://Helper-Scripts.com'><img src='https://raw.githubusercontent.com/tteck/Proxmox/main/misc/images/logo-81x112.png'/></a>
 
-  # Ubuntu 24.04 VM
+  # Windows 11 VM
 
-  <a href='https://ko-fi.com/D1D7EP4GF'><img src='https://img.shields.io/badge/&#x2615;-Buy me a coffee-blue' /></a>
+  <a href='https://ko-fi.com/remz1337'><img src='https://img.shields.io/badge/&#x2615;-Buy me a coffee-blue' /></a>
   </div>" >/dev/null
-msg_ok "Created a Ubuntu 24.04 VM ${CL}${BL}(${HN})"
+msg_ok "Created a Windows 11 VM ${CL}${BL}(${HN})"
 if [ "$START_VM" == "yes" ]; then
-  msg_info "Starting Ubuntu 24.04 VM"
+  msg_info "Starting Windows 11 VM"
   qm start $VMID
-  msg_ok "Started Ubuntu 24.04 VM"
+  msg_ok "Started Windows 11 VM"
 fi
 msg_ok "Completed Successfully!\n"
 echo -e "Setup Cloud-Init before starting \n
