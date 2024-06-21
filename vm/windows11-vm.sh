@@ -457,28 +457,30 @@ btrfs)
   THIN=""
   ;;
 esac
-for i in {0,1}; do
+for i in {0..2}; do
   disk="DISK$i"
   eval DISK${i}=vm-${VMID}-disk-${i}${DISK_EXT:-}
   eval DISK${i}_REF=${STORAGE}:${DISK_REF:-}${!disk}
 done
 
 msg_info "Creating a Windows 11 VM"
-echo "qm create $VMID -agent 1${MACHINE} -bios ovmf${CPU_TYPE} -cores $CORE_COUNT -memory $RAM_SIZE \
-  -name $HN -tags proxmox-helper-scripts -net0 virtio,bridge=$BRG,macaddr=$MAC$VLAN$MTU,firewall=1 -ostype win11 -scsihw virtio-scsi-pci"
-echo "pvesm alloc $STORAGE $VMID $DISK0 4M 1>&/dev/null"
-echo "qm importdisk $VMID ${FILE} $STORAGE ${DISK_IMPORT:-} 1>&/dev/null"
-echo "qm set $VMID \
-  -efidisk0 ${DISK0_REF}${FORMAT} \
+pvesm alloc $STORAGE $VMID $DISK0 4M 1>&/dev/null
+pvesm alloc $STORAGE $VMID $DISK1 40G 1>&/dev/null
+pvesm alloc $STORAGE $VMID $DISK2 4M 1>&/dev/null
+qm create $VMID -agent 1${MACHINE} -bios ovmf${CPU_TYPE} -cores $CORE_COUNT -cpuunits 5000 -balloon 4096 -memory $RAM_SIZE \
+  -name $HN -tags proxmox-helper-scripts -net0 virtio,bridge=$BRG,macaddr=$MAC$VLAN$MTU,firewall=1 -ostype win11 -scsihw virtio-scsi-pci \
+  -efidisk0 ${DISK0_REF}${FORMAT},pre-enrolled-keys=1 \
   -scsi0 ${DISK1_REF},${DISK_CACHE}${THIN}size=40G \
-  -ide2 ${STORAGE} \
-  -boot order=scsi0 "
-  # -description "<div align='center'><a href='https://Helper-Scripts.com'><img src='https://raw.githubusercontent.com/tteck/Proxmox/main/misc/images/logo-81x112.png'/></a>
+  -tpmstate0 local-lvm:vm-300-disk-2,size=4M,version=v2.0 \
+  -ide0 /var/lib/vz/template/iso/${FILE},media=cdrom \
+  -smbios1 uuid=$(od -x /dev/urandom | head -1 | awk '{OFS="-"; print $2$3,$4,$5,$6,$7$8$9}') \
+  -boot order=scsi0 \
+  -description "<div align='center'><a href='https://Helper-Scripts.com'><img src='https://raw.githubusercontent.com/tteck/Proxmox/main/misc/images/logo-81x112.png'/></a>
 
-  # # Windows 11 VM
+  # Windows 11 VM
 
-  # <a href='https://ko-fi.com/remz1337'><img src='https://img.shields.io/badge/&#x2615;-Buy me a coffee-blue' /></a>
-  # </div>" >/dev/null
+  <a href='https://ko-fi.com/remz1337'><img src='https://img.shields.io/badge/&#x2615;-Buy me a coffee-blue' /></a>
+  </div>" >/dev/null
 msg_ok "Created a Windows 11 VM ${CL}${BL}(${HN})"
 if [ "$START_VM" == "yes" ]; then
   msg_info "Starting Windows 11 VM"
