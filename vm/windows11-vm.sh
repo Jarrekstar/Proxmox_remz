@@ -366,14 +366,14 @@ function select_iso() {
     exit-script
   else
     # Select ISO
-    ISO=""
+    FILE=""
     while [ -z "${ISO:+x}" ]; do
-      ISO=$(whiptail --backtitle "Proxmox VE Helper Scripts" --title "Windows 11 ISO" --radiolist \
+      FILE=$(whiptail --backtitle "Proxmox VE Helper Scripts" --title "Windows 11 ISO" --radiolist \
       "Which ISO would you like to use?\nTo make a selection, use the Spacebar.\n" \
       16 $(($MSG_MAX_LENGTH + 23)) 6 \
       "${ISO_MENU[@]}" 3>&1 1>&2 2>&3) || exit "Menu aborted."
     done
-    printf "$ISO"
+    printf "$FILE"
   fi
 }
 
@@ -418,6 +418,7 @@ if [ -f /var/lib/vz/template/iso/Win11_English_x64.iso ]; then
   if (whiptail --backtitle "Proxmox VE Helper Scripts" --title "Windows 11 ISO" --yesno "Reuse existing ISO?" 10 58); then
     echo -e "Reusing existing ISO."
     REUSE_ISO="yes"
+    FILE="Win11_English_x64.iso"
   fi
 fi
 
