@@ -430,12 +430,6 @@ if [ $REUSE_ISO == "no" ]; then
 fi
 
 
-exit
-
-
-
-
-
 
 # msg_info "Retrieving the URL for the Windows 11 Disk Image"
 # URL=https://mirror.mika.moe/files/Win11_English_x64.iso
@@ -469,16 +463,15 @@ for i in {0,1}; do
 done
 
 msg_info "Creating a Windows 11 VM"
-qm create $VMID -agent 1${MACHINE} -tablet 0 -localtime 1 -bios ovmf${CPU_TYPE} -cores $CORE_COUNT -memory $RAM_SIZE \
-  -name $HN -tags proxmox-helper-scripts -net0 virtio,bridge=$BRG,macaddr=$MAC$VLAN$MTU -onboot 1 -ostype l26 -scsihw virtio-scsi-pci
+qm create $VMID -agent 1${MACHINE} -bios ovmf${CPU_TYPE} -cores $CORE_COUNT -memory $RAM_SIZE \
+  -name $HN -tags proxmox-helper-scripts -net0 virtio,bridge=$BRG,macaddr=$MAC$VLAN$MTU,firewall=1 -ostype win11 -scsihw virtio-scsi-pci
 pvesm alloc $STORAGE $VMID $DISK0 4M 1>&/dev/null
 qm importdisk $VMID ${FILE} $STORAGE ${DISK_IMPORT:-} 1>&/dev/null
 qm set $VMID \
   -efidisk0 ${DISK0_REF}${FORMAT} \
   -scsi0 ${DISK1_REF},${DISK_CACHE}${THIN}size=2G \
-  -ide2 ${STORAGE}:cloudinit \
+  -ide2 ${STORAGE} \
   -boot order=scsi0 \
-  -serial0 socket \
   -description "<div align='center'><a href='https://Helper-Scripts.com'><img src='https://raw.githubusercontent.com/tteck/Proxmox/main/misc/images/logo-81x112.png'/></a>
 
   # Windows 11 VM
@@ -492,5 +485,3 @@ if [ "$START_VM" == "yes" ]; then
   msg_ok "Started Windows 11 VM"
 fi
 msg_ok "Completed Successfully!\n"
-echo -e "Setup Cloud-Init before starting \n
-More info at https://github.com/tteck/Proxmox/discussions/2072 \n"
