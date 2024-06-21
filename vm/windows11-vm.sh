@@ -463,21 +463,21 @@ for i in {0,1}; do
 done
 
 msg_info "Creating a Windows 11 VM"
-qm create $VMID -agent 1${MACHINE} -bios ovmf${CPU_TYPE} -cores $CORE_COUNT -memory $RAM_SIZE \
-  -name $HN -tags proxmox-helper-scripts -net0 virtio,bridge=$BRG,macaddr=$MAC$VLAN$MTU,firewall=1 -ostype win11 -scsihw virtio-scsi-pci
-pvesm alloc $STORAGE $VMID $DISK0 4M 1>&/dev/null
-qm importdisk $VMID ${FILE} $STORAGE ${DISK_IMPORT:-} 1>&/dev/null
-qm set $VMID \
+echo "qm create $VMID -agent 1${MACHINE} -bios ovmf${CPU_TYPE} -cores $CORE_COUNT -memory $RAM_SIZE \
+  -name $HN -tags proxmox-helper-scripts -net0 virtio,bridge=$BRG,macaddr=$MAC$VLAN$MTU,firewall=1 -ostype win11 -scsihw virtio-scsi-pci"
+echo "pvesm alloc $STORAGE $VMID $DISK0 4M 1>&/dev/null"
+echo "qm importdisk $VMID ${FILE} $STORAGE ${DISK_IMPORT:-} 1>&/dev/null"
+echo "qm set $VMID \
   -efidisk0 ${DISK0_REF}${FORMAT} \
   -scsi0 ${DISK1_REF},${DISK_CACHE}${THIN}size=2G \
   -ide2 ${STORAGE} \
-  -boot order=scsi0 \
-  -description "<div align='center'><a href='https://Helper-Scripts.com'><img src='https://raw.githubusercontent.com/tteck/Proxmox/main/misc/images/logo-81x112.png'/></a>
+  -boot order=scsi0 "
+  # -description "<div align='center'><a href='https://Helper-Scripts.com'><img src='https://raw.githubusercontent.com/tteck/Proxmox/main/misc/images/logo-81x112.png'/></a>
 
-  # Windows 11 VM
+  # # Windows 11 VM
 
-  <a href='https://ko-fi.com/remz1337'><img src='https://img.shields.io/badge/&#x2615;-Buy me a coffee-blue' /></a>
-  </div>" >/dev/null
+  # <a href='https://ko-fi.com/remz1337'><img src='https://img.shields.io/badge/&#x2615;-Buy me a coffee-blue' /></a>
+  # </div>" >/dev/null
 msg_ok "Created a Windows 11 VM ${CL}${BL}(${HN})"
 if [ "$START_VM" == "yes" ]; then
   msg_info "Starting Windows 11 VM"
