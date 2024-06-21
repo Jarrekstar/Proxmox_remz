@@ -732,7 +732,7 @@ EOF'
   fi
   # This executes post_create_lxc.sh for additional configurations (default user, shared mount directory, postfix satellite)
   #bash -c "$(wget -qLO - https://raw.githubusercontent.com/remz1337/Proxmox/beta/ct/post_create_lxc.sh)" || exit
-  source <(curl -s https://raw.githubusercontent.com/remz1337/Proxmox/beta/ct/post_create_lxc.sh)
+  #source <(curl -s https://raw.githubusercontent.com/remz1337/Proxmox/beta/ct/post_create_lxc.sh)
   lxc-attach -n "$CTID" -- bash -c "$(wget -qLO - https://raw.githubusercontent.com/remz1337/Proxmox/beta/install/$var_install.sh)" || exit
 
 }
