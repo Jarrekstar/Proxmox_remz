@@ -133,7 +133,8 @@ function exit-script() {
 function default_settings() {
   VMID="$NEXTID"
   FORMAT=",efitype=4m"
-  MACHINE=" -machine q35"
+#  MACHINE=" -machine q35"
+  MACHINE=""
   DISK_CACHE=""
   HN="win11"
   CPU_TYPE=" -cpu host"
@@ -470,11 +471,11 @@ pvesm alloc $STORAGE $VMID $DISK2 4M 1>&/dev/null
 qm create $VMID -agent 1${MACHINE} -onboot 0 -bios ovmf${CPU_TYPE} -cores $CORE_COUNT -cpuunits 5000 -balloon 4096 -memory $RAM_SIZE \
   -name $HN -tags proxmox-helper-scripts -net0 virtio,bridge=$BRG,macaddr=$MAC$VLAN$MTU,firewall=1 -ostype win11 -scsihw virtio-scsi-pci \
   -efidisk0 ${DISK0_REF}${FORMAT},pre-enrolled-keys=1 \
-  -scsi0 ${DISK1_REF},${DISK_CACHE}${THIN}size=40G \
+  -scsi0 ${DISK1_REF},${DISK_CACHE}${THIN}size=40G,discard=ignore \
   -tpmstate0 ${DISK2_REF},size=4M,version=v2.0 \
   -ide0 /var/lib/vz/template/iso/${FILE},media=cdrom \
   -smbios1 uuid=$(od -x /dev/urandom | head -1 | awk '{OFS="-"; print $2$3,$4,$5,$6,$7$8$9}') \
-  -boot order=scsi0 \
+  -boot order=ide0;scsi0 \
   -description "<div align='center'><a href='https://Helper-Scripts.com'><img src='https://raw.githubusercontent.com/tteck/Proxmox/main/misc/images/logo-81x112.png'/></a>
 
   # Windows 11 VM
