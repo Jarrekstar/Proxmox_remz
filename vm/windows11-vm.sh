@@ -403,7 +403,8 @@ function detect_win11_iso() {
 
   if [ $REUSE_ISO == "no" ]; then
     if (whiptail --backtitle "Proxmox VE Helper Scripts" --defaultno --title "Windows 11 ISO" --yesno "Select Existing ISO?" 10 58); then
-      WIN11_ISO=$(select_iso)
+      select_iso
+	  WIN11_ISO=$FILE
     else
       download_win11_iso
     fi
@@ -424,7 +425,8 @@ function detect_virtio_iso() {
 
   if [ $REUSE_ISO == "no" ]; then
     if (whiptail --backtitle "Proxmox VE Helper Scripts" --defaultno --title "VirtIO ISO" --yesno "Select Existing ISO?" 10 58); then
-      VIRTIO_ISO=$(select_iso)
+      select_iso
+	  VIRTIO_ISO=$FILE
     else
       download_virtio_iso
     fi
