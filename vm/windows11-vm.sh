@@ -341,11 +341,23 @@ function download_win11_iso() {
   msg_info "Retrieving the URL for the Windows 11 Disk Image"
   URL=https://mirror.mika.moe/files/Win11_English_x64.iso
   sleep 2
+  WIN11_ISO=$(basename $URL)
   msg_ok "${CL}${BL}${URL}${CL}"
   cd /var/lib/vz/template/iso/
-  wget -q --show-progress $URL -O Win11_English_x64.iso
+  wget -q --show-progress $URL -O $WIN11_ISO
   echo -en "\e[1A\e[0K"
-  WIN11_ISO=$(basename $URL)
+  msg_ok "Downloaded ${CL}${BL}${WIN11_ISO}${CL}"
+}
+
+function download_virtio_iso() {
+  msg_info "Retrieving the URL for the RedHat VirtIO Disk Image"
+  URL=https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso
+  sleep 2
+  VIRTIO_ISO=$(basename $URL)
+  msg_ok "${CL}${BL}${URL}${CL}"
+  cd /var/lib/vz/template/iso/
+  wget -q --show-progress $URL -O VIRTIO_ISO
+  echo -en "\e[1A\e[0K"
   msg_ok "Downloaded ${CL}${BL}${WIN11_ISO}${CL}"
 }
 
@@ -414,7 +426,7 @@ function detect_virtio_iso() {
     if (whiptail --backtitle "Proxmox VE Helper Scripts" --defaultno --title "VirtIO ISO" --yesno "Select Existing ISO?" 10 58); then
       VIRTIO_ISO=$(select_iso)
     else
-      download_win11_iso
+      download_virtio_iso
     fi
   fi
 }
