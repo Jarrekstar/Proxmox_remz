@@ -34,7 +34,7 @@ BFR="\\r\\033[K"
 HOLD="-"
 CM="${GN}✓${CL}"
 CROSS="${RD}✗${CL}"
-THIN="discard=on,ssd=1,"
+THIN="discard=ignore,ssd=1,"
 set -e
 trap 'error_handler $LINENO "$BASH_COMMAND"' ERR
 trap cleanup EXIT
@@ -531,7 +531,7 @@ pvesm alloc $STORAGE $VMID $DISK2 4M 1>&/dev/null
 qm create $VMID -agent 1${MACHINE} -onboot 0 -bios ovmf${CPU_TYPE} -cores $CORE_COUNT -cpuunits 5000 -balloon 4096 -memory $RAM_SIZE \
   -name $HN -tags proxmox-helper-scripts -net0 virtio,bridge=$BRG,macaddr=$MAC$VLAN$MTU,firewall=1 -ostype win11 -scsihw virtio-scsi-pci \
   -efidisk0 ${DISK0_REF}${FORMAT},pre-enrolled-keys=1 \
-  -scsi0 ${DISK1_REF},${DISK_CACHE}${THIN}size=40G,discard=ignore \
+  -scsi0 ${DISK1_REF},${DISK_CACHE}${THIN}size=40G \
   -tpmstate0 ${DISK2_REF},size=4M,version=v2.0 \
   -ide0 /var/lib/vz/template/iso/${WIN11_ISO},media=cdrom \
   -sata0 /var/lib/vz/template/iso/${VIRTIO_ISO},media=cdrom \
