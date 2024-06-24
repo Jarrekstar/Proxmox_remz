@@ -380,7 +380,7 @@ function select_iso() {
   else
     # Select ISO
     FILE=""
-    while [ -z "${ISO:+x}" ]; do
+    while [ -z "${FILE:+x}" ]; do
       FILE=$(whiptail --backtitle "Proxmox VE Helper Scripts" --title "Windows 11 ISO" --radiolist \
       "Which ISO would you like to use?\nTo make a selection, use the Spacebar.\n" \
       16 $(($MSG_MAX_LENGTH + 23)) 6 \
