@@ -337,7 +337,7 @@ function start_script() {
   fi
 }
 
-function download_iso() {
+function download_win11_iso() {
   msg_info "Retrieving the URL for the Windows 11 Disk Image"
   URL=https://mirror.mika.moe/files/Win11_English_x64.iso
   sleep 2
@@ -345,8 +345,8 @@ function download_iso() {
   cd /var/lib/vz/template/iso/
   wget -q --show-progress $URL -O Win11_English_x64.iso
   echo -en "\e[1A\e[0K"
-  FILE=$(basename $URL)
-  msg_ok "Downloaded ${CL}${BL}${FILE}${CL}"
+  WIN11_ISO=$(basename $URL)
+  msg_ok "Downloaded ${CL}${BL}${WIN11_ISO}${CL}"
 }
 
 function select_iso() {
@@ -375,6 +375,47 @@ function select_iso() {
       "${ISO_MENU[@]}" 3>&1 1>&2 2>&3) || exit "Menu aborted."
     done
     printf "$FILE"
+  fi
+}
+
+function detect_win11_iso() {
+  REUSE_ISO="no"
+  if [ -f /var/lib/vz/template/iso/Win11_English_x64.iso ]; then
+    echo "Win11_English_x64.iso already exists."
+    if (whiptail --backtitle "Proxmox VE Helper Scripts" --title "Windows 11 ISO" --yesno "Reuse existing ISO?" 10 58); then
+      echo -e "Reusing existing ISO."
+      REUSE_ISO="yes"
+      WIN11_ISO="Win11_English_x64.iso"
+    fi
+  fi
+
+  if [ $REUSE_ISO == "no" ]; then
+    if (whiptail --backtitle "Proxmox VE Helper Scripts" --defaultno --title "Windows 11 ISO" --yesno "Select Existing ISO?" 10 58); then
+      WIN11_ISO=$(select_iso)
+    else
+      download_win11_iso
+    fi
+  fi
+}
+
+
+function detect_virtio_iso() {
+  REUSE_ISO="no"
+  if [ -f /var/lib/vz/template/iso/virtio-win.iso ]; then
+    echo "virtio-win.iso already exists."
+    if (whiptail --backtitle "Proxmox VE Helper Scripts" --title "VirtIO ISO" --yesno "Reuse existing ISO?" 10 58); then
+      echo -e "Reusing existing ISO."
+      REUSE_ISO="yes"
+      VIRTIO_ISO="virtio-win.iso"
+    fi
+  fi
+
+  if [ $REUSE_ISO == "no" ]; then
+    if (whiptail --backtitle "Proxmox VE Helper Scripts" --defaultno --title "VirtIO ISO" --yesno "Select Existing ISO?" 10 58); then
+      VIRTIO_ISO=$(select_iso)
+    else
+      download_win11_iso
+    fi
   fi
 }
 
@@ -413,23 +454,28 @@ fi
 msg_ok "Using ${CL}${BL}$STORAGE${CL} ${GN}for Storage Location."
 msg_ok "Virtual Machine ID is ${CL}${BL}$VMID${CL}."
 
-REUSE_ISO="no"
-if [ -f /var/lib/vz/template/iso/Win11_English_x64.iso ]; then
-  echo "Win11_English_x64.iso already exists."
-  if (whiptail --backtitle "Proxmox VE Helper Scripts" --title "Windows 11 ISO" --yesno "Reuse existing ISO?" 10 58); then
-    echo -e "Reusing existing ISO."
-    REUSE_ISO="yes"
-    FILE="Win11_English_x64.iso"
-  fi
-fi
 
-if [ $REUSE_ISO == "no" ]; then
-  if (whiptail --backtitle "Proxmox VE Helper Scripts" --defaultno --title "Windows 11 ISO" --yesno "Select Existing ISO?" 10 58); then
-    select_iso
-  else
-    download_iso
-  fi
-fi
+detect_win11_iso
+# REUSE_ISO="no"
+# if [ -f /var/lib/vz/template/iso/Win11_English_x64.iso ]; then
+  # echo "Win11_English_x64.iso already exists."
+  # if (whiptail --backtitle "Proxmox VE Helper Scripts" --title "Windows 11 ISO" --yesno "Reuse existing ISO?" 10 58); then
+    # echo -e "Reusing existing ISO."
+    # REUSE_ISO="yes"
+    # FILE="Win11_English_x64.iso"
+  # fi
+# fi
+
+# if [ $REUSE_ISO == "no" ]; then
+  # if (whiptail --backtitle "Proxmox VE Helper Scripts" --defaultno --title "Windows 11 ISO" --yesno "Select Existing ISO?" 10 58); then
+    # select_iso
+  # else
+    # download_win11_iso
+  # fi
+# fi
+
+
+detect_virtio_iso
 
 
 
@@ -473,7 +519,8 @@ qm create $VMID -agent 1${MACHINE} -onboot 0 -bios ovmf${CPU_TYPE} -cores $CORE_
   -efidisk0 ${DISK0_REF}${FORMAT},pre-enrolled-keys=1 \
   -scsi0 ${DISK1_REF},${DISK_CACHE}${THIN}size=40G,discard=ignore \
   -tpmstate0 ${DISK2_REF},size=4M,version=v2.0 \
-  -ide0 /var/lib/vz/template/iso/${FILE},media=cdrom \
+  -ide0 /var/lib/vz/template/iso/${WIN11_ISO},media=cdrom \
+  -sata0 /var/lib/vz/template/iso/${VIRTIO_ISO},media=cdrom \
   -smbios1 uuid=$(od -x /dev/urandom | head -1 | awk '{OFS="-"; print $2$3,$4,$5,$6,$7$8$9}') \
   -boot order=ide0;scsi0 \
   -description "<div align='center'><a href='https://Helper-Scripts.com'><img src='https://raw.githubusercontent.com/tteck/Proxmox/main/misc/images/logo-81x112.png'/></a>
