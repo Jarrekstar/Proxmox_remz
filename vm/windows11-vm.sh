@@ -139,6 +139,7 @@ function variables() {
 var_disk="40"
 var_min_ram="4096"
 var_ram="8192"
+var_cpu="6"
 function default_settings() {
   VMID="$NEXTID"
   FORMAT=",efitype=4m"
@@ -148,7 +149,7 @@ function default_settings() {
   DISK_SIZE="$var_disk"
   HN="win11"
   CPU_TYPE=" -cpu host"
-  CORE_COUNT="6"
+  CORE_COUNT="$var_cpu"
   MIN_RAM_SIZE="$var_min_ram"
   RAM_SIZE="$var_ram"
   BRG="vmbr0"
@@ -161,7 +162,7 @@ function default_settings() {
   echo -e "${DGN}Using Disk Cache: ${BGN}None${CL}"
   echo -e "${DGN}Using Hostname: ${BGN}${HN}${CL}"
   echo -e "${DGN}Using Disk Size: ${BGN}${DISK_SIZE}${CL}"
-  echo -e "${DGN}Using CPU Model: ${BGN}KVM64${CL}"
+  echo -e "${DGN}Using CPU Model: ${BGN}Host${CL}"
   echo -e "${DGN}Allocated Cores: ${BGN}${CORE_COUNT}${CL}"
   echo -e "${DGN}Minimum Allocated RAM (Ballooning): ${BGN}${MIN_RAM_SIZE}${CL}"
   echo -e "${DGN}Allocated RAM: ${BGN}${RAM_SIZE}${CL}"
@@ -247,8 +248,8 @@ function advanced_settings() {
   fi
 
   if CPU_TYPE1=$(whiptail --backtitle "Proxmox VE Helper Scripts" --title "CPU MODEL" --radiolist "Choose" --cancel-button Exit-Script 10 58 2 \
-    "0" "KVM64 (Default)" ON \
-    "1" "Host" OFF \
+    "0" "KVM64" OFF \
+    "1" "Host (Default)" ON \
     3>&1 1>&2 2>&3); then
     if [ $CPU_TYPE1 = "1" ]; then
       echo -e "${DGN}Using CPU Model: ${BGN}Host${CL}"
@@ -261,9 +262,9 @@ function advanced_settings() {
     exit-script
   fi
 
-  if CORE_COUNT=$(whiptail --backtitle "Proxmox VE Helper Scripts" --inputbox "Allocate CPU Cores" 8 58 2 --title "CORE COUNT" --cancel-button Exit-Script 3>&1 1>&2 2>&3); then
+  if CORE_COUNT=$(whiptail --backtitle "Proxmox VE Helper Scripts" --inputbox "Allocate CPU Cores" 8 58 $var_cpu --title "CORE COUNT" --cancel-button Exit-Script 3>&1 1>&2 2>&3); then
     if [ -z $CORE_COUNT ]; then
-      CORE_COUNT="2"
+      CORE_COUNT="$var_cpu"
       echo -e "${DGN}Allocated Cores: ${BGN}$CORE_COUNT${CL}"
     else
       echo -e "${DGN}Allocated Cores: ${BGN}$CORE_COUNT${CL}"
