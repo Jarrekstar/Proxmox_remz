@@ -34,7 +34,7 @@ BFR="\\r\\033[K"
 HOLD="-"
 CM="${GN}✓${CL}"
 CROSS="${RD}✗${CL}"
-THIN="discard=ignore,ssd=1,"
+THIN="discard=on,ssd=1,"
 set -e
 trap 'error_handler $LINENO "$BASH_COMMAND"' ERR
 trap cleanup EXIT
@@ -566,14 +566,14 @@ pvesm alloc $STORAGE $VMID $DISK0 4M 1>&/dev/null
 pvesm alloc $STORAGE $VMID $DISK1 ${DISK_SIZE}G 1>&/dev/null
 pvesm alloc $STORAGE $VMID $DISK2 4M 1>&/dev/null
 qm create $VMID -agent 1${MACHINE} -onboot 0 -bios ovmf${CPU_TYPE} -cores $CORE_COUNT -cpuunits 5000 -balloon $MIN_RAM_SIZE -memory $RAM_SIZE \
-  -name $HN -tags proxmox-helper-scripts -net0 virtio,bridge=$BRG,macaddr=$MAC$VLAN$MTU,firewall=1 -ostype win11 -scsihw virtio-scsi-pci \
+  -name $HN -tags proxmox-helper-scripts -net0 virtio,bridge=$BRG,macaddr=$MAC$VLAN$MTU,firewall=1 -ostype win11 -scsihw virtio-scsi-single \
   -efidisk0 ${DISK0_REF}${FORMAT},pre-enrolled-keys=1 \
-  -sata0 ${DISK1_REF},${DISK_CACHE}${THIN}size=${DISK_SIZE}G \
+  -scsi0 ${DISK1_REF},${DISK_CACHE}${THIN}size=${DISK_SIZE}G \
   -tpmstate0 ${DISK2_REF},size=4M,version=v2.0 \
-  -sata1 /var/lib/vz/template/iso/${WIN11_ISO},media=cdrom \
-  -sata2 /var/lib/vz/template/iso/${VIRTIO_ISO},media=cdrom \
+  -sata0 /var/lib/vz/template/iso/${WIN11_ISO},media=cdrom \
+  -sata1 /var/lib/vz/template/iso/${VIRTIO_ISO},media=cdrom \
   -smbios1 uuid=$(od -x /dev/urandom | head -1 | awk '{OFS="-"; print $2$3,$4,$5,$6,$7$8$9}') \
-  -boot order="sata1;sata0" \
+  -boot order="sata0;scsi0" \
   -description "<div align='center'><a href='https://Helper-Scripts.com'><img src='https://raw.githubusercontent.com/tteck/Proxmox/main/misc/images/logo-81x112.png'/></a>
 
   # Windows 11 VM
