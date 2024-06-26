@@ -130,16 +130,27 @@ function exit-script() {
   exit
 }
 
+function variables() {
+#  NSAPP=$(echo ${APP,,} | tr -d ' ') # This function sets the NSAPP variable by converting the value of the APP variable to lowercase and removing any spaces.
+#  var_install="${NSAPP}-install"     # sets the var_install variable by appending "-install" to the value of NSAPP.
+  INTEGER='^[0-9]+([.][0-9]+)?$'     # it defines the INTEGER regular expression pattern.
+}
+
+var_disk="40"
+var_min_ram="4096"
+var_ram="8192"
 function default_settings() {
   VMID="$NEXTID"
   FORMAT=",efitype=4m"
 #  MACHINE=" -machine q35"
   MACHINE=""
   DISK_CACHE=""
+  DISK_SIZE="$var_disk"
   HN="win11"
   CPU_TYPE=" -cpu host"
   CORE_COUNT="6"
-  RAM_SIZE="8192"
+  MIN_RAM_SIZE="$var_min_ram"
+  RAM_SIZE="$var_ram"
   BRG="vmbr0"
   MAC="$GEN_MAC"
   VLAN=""
@@ -149,8 +160,10 @@ function default_settings() {
   echo -e "${DGN}Using Machine Type: ${BGN}i440fx${CL}"
   echo -e "${DGN}Using Disk Cache: ${BGN}None${CL}"
   echo -e "${DGN}Using Hostname: ${BGN}${HN}${CL}"
+  echo -e "${DGN}Using Disk Size: ${BGN}${DISK_SIZE}${CL}"
   echo -e "${DGN}Using CPU Model: ${BGN}KVM64${CL}"
   echo -e "${DGN}Allocated Cores: ${BGN}${CORE_COUNT}${CL}"
+  echo -e "${DGN}Minimum Allocated RAM (Ballooning): ${BGN}${MIN_RAM_SIZE}${CL}"
   echo -e "${DGN}Allocated RAM: ${BGN}${RAM_SIZE}${CL}"
   echo -e "${DGN}Using Bridge: ${BGN}${BRG}${CL}"
   echo -e "${DGN}Using MAC Address: ${BGN}${MAC}${CL}"
@@ -222,6 +235,17 @@ function advanced_settings() {
     exit-script
   fi
 
+  if DISK_SIZE=$(whiptail --backtitle "Proxmox VE Helper Scripts" --inputbox "Set Disk Size in GB" 8 58 $var_disk --title "DISK SIZE" --cancel-button Exit-Script 3>&1 1>&2 2>&3); then
+    if [ -z $DISK_SIZE ]; then
+      DISK_SIZE="$var_disk"
+      echo -e "${DGN}Using Disk Size: ${BGN}$DISK_SIZE${CL}"
+    else
+      echo -e "${DGN}Using Disk Size: ${BGN}$DISK_SIZE${CL}"
+    fi
+  else
+    exit-script
+  fi
+
   if CPU_TYPE1=$(whiptail --backtitle "Proxmox VE Helper Scripts" --title "CPU MODEL" --radiolist "Choose" --cancel-button Exit-Script 10 58 2 \
     "0" "KVM64 (Default)" ON \
     "1" "Host" OFF \
@@ -248,9 +272,20 @@ function advanced_settings() {
     exit-script
   fi
 
-  if RAM_SIZE=$(whiptail --backtitle "Proxmox VE Helper Scripts" --inputbox "Allocate RAM in MiB" 8 58 2048 --title "RAM" --cancel-button Exit-Script 3>&1 1>&2 2>&3); then
+  if MIN_RAM_SIZE=$(whiptail --backtitle "Proxmox VE Helper Scripts" --inputbox "Allocate minimum RAM in MiB" 8 58 $var_min_ram --title "MINIMUM RAM" --cancel-button Exit-Script 3>&1 1>&2 2>&3); then
+    if [ -z $MIN_RAM_SIZE ]; then
+      MIN_RAM_SIZE="$var_min_ram"
+      echo -e "${DGN}Minimum Allocated RAM (Ballooning): ${BGN}$MIN_RAM_SIZE${CL}"
+    else
+      echo -e "${DGN}Minimum Allocated RAM (Ballooning): ${BGN}$MIN_RAM_SIZE${CL}"
+    fi
+  else
+    exit-script
+  fi
+  
+  if RAM_SIZE=$(whiptail --backtitle "Proxmox VE Helper Scripts" --inputbox "Allocate RAM in MiB" 8 58 $var_ram --title "RAM" --cancel-button Exit-Script 3>&1 1>&2 2>&3); then
     if [ -z $RAM_SIZE ]; then
-      RAM_SIZE="2048"
+      RAM_SIZE="$var_ram"
       echo -e "${DGN}Allocated RAM: ${BGN}$RAM_SIZE${CL}"
     else
       echo -e "${DGN}Allocated RAM: ${BGN}$RAM_SIZE${CL}"
@@ -433,6 +468,7 @@ function detect_virtio_iso() {
   fi
 }
 
+variables
 check_root
 arch_check
 pve_check
@@ -526,17 +562,17 @@ done
 
 msg_info "Creating a Windows 11 VM"
 pvesm alloc $STORAGE $VMID $DISK0 4M 1>&/dev/null
-pvesm alloc $STORAGE $VMID $DISK1 40G 1>&/dev/null
+pvesm alloc $STORAGE $VMID $DISK1 ${DISK_SIZE}G 1>&/dev/null
 pvesm alloc $STORAGE $VMID $DISK2 4M 1>&/dev/null
-qm create $VMID -agent 1${MACHINE} -onboot 0 -bios ovmf${CPU_TYPE} -cores $CORE_COUNT -cpuunits 5000 -balloon 4096 -memory $RAM_SIZE \
+qm create $VMID -agent 1${MACHINE} -onboot 0 -bios ovmf${CPU_TYPE} -cores $CORE_COUNT -cpuunits 5000 -balloon $MIN_RAM_SIZE -memory $RAM_SIZE \
   -name $HN -tags proxmox-helper-scripts -net0 virtio,bridge=$BRG,macaddr=$MAC$VLAN$MTU,firewall=1 -ostype win11 -scsihw virtio-scsi-pci \
   -efidisk0 ${DISK0_REF}${FORMAT},pre-enrolled-keys=1 \
-  -scsi0 ${DISK1_REF},${DISK_CACHE}${THIN}size=40G \
+  -sata0 ${DISK1_REF},${DISK_CACHE}${THIN}size=${DISK_SIZE}G \
   -tpmstate0 ${DISK2_REF},size=4M,version=v2.0 \
-  -ide0 /var/lib/vz/template/iso/${WIN11_ISO},media=cdrom \
-  -sata0 /var/lib/vz/template/iso/${VIRTIO_ISO},media=cdrom \
+  -sata1 /var/lib/vz/template/iso/${WIN11_ISO},media=cdrom \
+  -sata2 /var/lib/vz/template/iso/${VIRTIO_ISO},media=cdrom \
   -smbios1 uuid=$(od -x /dev/urandom | head -1 | awk '{OFS="-"; print $2$3,$4,$5,$6,$7$8$9}') \
-  -boot order="ide0;scsi0" \
+  -boot order="sata1;sata0" \
   -description "<div align='center'><a href='https://Helper-Scripts.com'><img src='https://raw.githubusercontent.com/tteck/Proxmox/main/misc/images/logo-81x112.png'/></a>
 
   # Windows 11 VM
