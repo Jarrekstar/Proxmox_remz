@@ -106,6 +106,10 @@ function open_admin_cmd() {
   qm sendkey $VMID "ret"
 }
 
+function close_window() {
+  qm sendkey $VMID "alt-f4"
+}
+
 while true; do
   if VMID=$(whiptail --backtitle "Proxmox VE Helper Scripts" --inputbox "Set Virtual Machine ID" 8 58 100 --title "VIRTUAL MACHINE ID" --cancel-button Exit-Script 3>&1 1>&2 2>&3); then
     if [ -z "$VMID" ]; then
@@ -125,3 +129,5 @@ done
 open_admin_cmd
 #send_line_to_vm "E:/virtio-win-gt-x64.msi /qn ADDLOCAL=ALL"
 send_line_to_vm "E:/virtio-win-guest-tools.exe /qn /s"
+sleep 10
+close_window
