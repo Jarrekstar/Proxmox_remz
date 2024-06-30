@@ -106,6 +106,14 @@ function open_admin_cmd() {
   qm sendkey $VMID "ret"
 }
 
+function open_admin_ps() {
+  open_run
+  send_keys_to_vm "powershell"
+  qm sendkey $VMID "ctrl-shift-ret"
+  qm sendkey $VMID "left"
+  qm sendkey $VMID "ret"
+}
+
 function close_window() {
   qm sendkey $VMID "alt-f4"
 }
@@ -127,7 +135,20 @@ while true; do
 done
 
 open_admin_cmd
+send_line_to_vm "echo Installing virtio drivers and guest tools."
+send_line_to_vm "echo Command window will close automatically after installation."
 #send_line_to_vm "E:/virtio-win-gt-x64.msi /qn ADDLOCAL=ALL"
 send_line_to_vm "E:/virtio-win-guest-tools.exe /qn /s"
+sleep 10
+close_window
+
+#Install TightVNC
+open_admin_ps
+send_line_to_vm "echo 'Installing TightVNC server. Password: admin123.'"
+send_line_to_vm "echo 'PowerShell window will close automatically after installation.'"
+send_line_to_vm "winget install -e --id GlavSoft.TightVNC --accept-source-agreements --accept-package-agreements --custom '/quiet ADDLOCAL=Server SET_USEVNCAUTHENTICATION=1 VALUE_OF_USEVNCAUTHENTICATION=1 SET_PASSWORD=1 VALUE_OF_PASSWORD=admin123'"
+#winget install -e --id GlavSoft.TightVNC --accept-source-agreements --accept-package-agreements --custom "/quiet SET_USEVNCAUTHENTICATION=1 VALUE_OF_USEVNCAUTHENTICATION=1 SET_PASSWORD=1 VALUE_OF_PASSWORD=mainpass"
+#msiexec /i tightvnc-2.5.2-setup-64bit.msi /quiet /norestart ADDLOCAL=Server
+#msiexec.exe /i tightvnc-2.5.2-setup-64bit.msi /quiet /norestart SET_USEVNCAUTHENTICATION=1 VALUE_OF_USEVNCAUTHENTICATION=1 SET_PASSWORD=1 VALUE_OF_PASSWORD=mainpass
 sleep 10
 close_window
