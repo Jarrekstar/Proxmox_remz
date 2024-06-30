@@ -574,8 +574,6 @@ qm create $VMID -agent 1${MACHINE} -onboot 0 -bios ovmf${CPU_TYPE} -cores $CORE_
   -sata1 /var/lib/vz/template/iso/${VIRTIO_ISO},media=cdrom \
   -smbios1 uuid=$(od -x /dev/urandom | head -1 | awk '{OFS="-"; print $2$3,$4,$5,$6,$7$8$9}') \
   -boot order="sata0;scsi0" \
-#  -vga none \
-#  -hostpci0 0000:07:00,pcie=1,x-vga=1 \
   -description "<div align='center'><a href='https://Helper-Scripts.com'><img src='https://raw.githubusercontent.com/tteck/Proxmox/main/misc/images/logo-81x112.png'/></a>
 
   # Windows 11 VM
