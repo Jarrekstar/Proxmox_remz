@@ -143,8 +143,8 @@ var_cpu="6"
 function default_settings() {
   VMID="$NEXTID"
   FORMAT=",efitype=4m"
-#  MACHINE=" -machine q35"
-  MACHINE=""
+  MACHINE=" -machine q35"
+#  MACHINE=""
   DISK_CACHE=""
   DISK_SIZE="$var_disk"
   HN="win11"
@@ -158,7 +158,7 @@ function default_settings() {
   MTU=""
   START_VM="no"
   echo -e "${DGN}Using Virtual Machine ID: ${BGN}${VMID}${CL}"
-  echo -e "${DGN}Using Machine Type: ${BGN}i440fx${CL}"
+  echo -e "${DGN}Using Machine Type: ${BGN}q35${CL}"
   echo -e "${DGN}Using Disk Cache: ${BGN}None${CL}"
   echo -e "${DGN}Using Hostname: ${BGN}${HN}${CL}"
   echo -e "${DGN}Using Disk Size: ${BGN}${DISK_SIZE}${CL}"
@@ -193,8 +193,8 @@ function advanced_settings() {
   done
 
   if MACH=$(whiptail --backtitle "Proxmox VE Helper Scripts" --title "MACHINE TYPE" --radiolist --cancel-button Exit-Script "Choose Type" 10 58 2 \
-    "i440fx" "Machine i440fx" ON \
-    "q35" "Machine q35" OFF \
+    "i440fx" "Machine i440fx" OFF \
+    "q35" "Machine q35" ON \
     3>&1 1>&2 2>&3); then
     if [ $MACH = q35 ]; then
       echo -e "${DGN}Using Machine Type: ${BGN}$MACH${CL}"
