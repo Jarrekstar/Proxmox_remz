@@ -565,7 +565,7 @@ msg_info "Creating a Windows 11 VM"
 pvesm alloc $STORAGE $VMID $DISK0 4M 1>&/dev/null
 pvesm alloc $STORAGE $VMID $DISK1 ${DISK_SIZE}G 1>&/dev/null
 pvesm alloc $STORAGE $VMID $DISK2 4M 1>&/dev/null
-qm create $VMID -agent 1${MACHINE} -onboot 0 -bios ovmf${CPU_TYPE} -cores $CORE_COUNT -cpuunits 5000 -balloon $MIN_RAM_SIZE -memory $RAM_SIZE \
+qm create $VMID -agent 1${MACHINE} -bios ovmf${CPU_TYPE} -cores $CORE_COUNT -cpuunits 5000 -balloon $MIN_RAM_SIZE -memory $RAM_SIZE \
   -name $HN -tags proxmox-helper-scripts -net0 virtio,bridge=$BRG,macaddr=$MAC$VLAN$MTU,firewall=1 -ostype win11 -scsihw virtio-scsi-single \
   -efidisk0 ${DISK0_REF}${FORMAT},pre-enrolled-keys=1 \
   -scsi0 ${DISK1_REF},${DISK_CACHE}${THIN}size=${DISK_SIZE}G \
