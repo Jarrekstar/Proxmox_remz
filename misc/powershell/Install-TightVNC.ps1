@@ -1,6 +1,3 @@
-echo 'Installing virtio drivers and guest tools.'
-E:/virtio-win-guest-tools.exe /qn /s
-sleep 15
 echo 'Installing TightVNC server.'
 $progressPreference = 'silentlyContinue'
 Write-Information "Downloading WinGet and its dependencies..."

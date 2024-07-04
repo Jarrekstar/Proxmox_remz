@@ -156,8 +156,8 @@ while true; do
 done
 
 open_admin_cmd
-send_line_to_vm "echo Installing virtio drivers and guest tools."
-send_line_to_vm "echo Command window will close automatically after installation."
+#send_line_to_vm "echo Installing virtio drivers and guest tools."
+#send_line_to_vm "echo Command window will close automatically after installation."
 #send_line_to_vm "E:/virtio-win-gt-x64.msi /qn ADDLOCAL=ALL"
 send_line_to_vm "E:/virtio-win-guest-tools.exe /qn /s"
 sleep 15
@@ -165,17 +165,17 @@ close_window
 
 #Install TightVNC
 open_admin_ps
-send_line_to_vm "echo ' Installing TightVNC server. Password: admin123' "
-send_line_to_vm "echo ' PowerShell window will close automatically after installation.' "
+#send_line_to_vm "echo ' Installing TightVNC server. Password: admin123' "
+#send_line_to_vm "echo ' PowerShell window will close automatically after installation.' "
+
+
+send_line_to_vm "Invoke-WebRequest -Uri https://raw.githubusercontent.com/remz1337/Proxmox/remz/misc/powershell/Install-TightVNC.ps1 -OutFile Install-TightVNC.ps1"
+send_line_to_vm ".\Install-TightVNC.ps1"
+
 #install winget first
-
-
 #Install-PackageProvider NuGet -Force;
 #Set-PSRepository PSGallery -InstallationPolicy Trusted
-
 #Invoke-WebRequest -Uri https://aka.ms/getwinget -OutFile winget.msixbundle
-
-
 
 
 #$progressPreference = 'silentlyContinue'
@@ -187,29 +187,26 @@ send_line_to_vm "echo ' PowerShell window will close automatically after install
 #Add-AppxPackage Microsoft.UI.Xaml.2.8.x64.appx
 #Add-AppxPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle
 
-send_keys_to_vm "$progressPreference = "
-send_keys_to_vm_quoted "silentlyContinue"
-qm sendkey $VMID "ret"
-send_keys_to_vm "Write-Information "
-send_keys_to_vm_doublequoted "Downloading WinGet and its dependencies..."
-qm sendkey $VMID "ret"
-send_line_to_vm "Invoke-WebRequest -Uri https://aka.ms/getwinget -OutFile Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
-send_line_to_vm "Invoke-WebRequest -Uri https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx -OutFile Microsoft.VCLibs.x64.14.00.Desktop.appx"
-send_line_to_vm "Invoke-WebRequest -Uri https://github.com/microsoft/microsoft-ui-xaml/releases/download/v2.8.6/Microsoft.UI.Xaml.2.8.x64.appx -OutFile Microsoft.UI.Xaml.2.8.x64.appx"
-send_line_to_vm "Add-AppxPackage Microsoft.VCLibs.x64.14.00.Desktop.appx"
-send_line_to_vm "Add-AppxPackage Microsoft.UI.Xaml.2.8.x64.appx"
-send_line_to_vm "Add-AppxPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
-
-
+#send_keys_to_vm "$progressPreference = "
+#send_keys_to_vm_quoted "silentlyContinue"
+#qm sendkey $VMID "ret"
+#send_keys_to_vm "Write-Information "
+#send_keys_to_vm_doublequoted "Downloading WinGet and its dependencies..."
+#qm sendkey $VMID "ret"
+#send_line_to_vm "Invoke-WebRequest -Uri https://aka.ms/getwinget -OutFile Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
+#send_line_to_vm "Invoke-WebRequest -Uri https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx -OutFile Microsoft.VCLibs.x64.14.00.Desktop.appx"
+#send_line_to_vm "Invoke-WebRequest -Uri https://github.com/microsoft/microsoft-ui-xaml/releases/download/v2.8.6/Microsoft.UI.Xaml.2.8.x64.appx -OutFile Microsoft.UI.Xaml.2.8.x64.appx"
+#send_line_to_vm "Add-AppxPackage Microsoft.VCLibs.x64.14.00.Desktop.appx"
+#send_line_to_vm "Add-AppxPackage Microsoft.UI.Xaml.2.8.x64.appx"
+#send_line_to_vm "Add-AppxPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
 
 
 #Install-Module -Name Microsoft.WinGet.Client
 
-
 #Invoke-WebRequest -Uri https://aka.ms/getwinget -OutFile winget.msixbundle
 #Add-AppxPackage winget.msixbundle
 #del winget.msixbundle
-send_line_to_vm "winget install -e --id GlavSoft.TightVNC --accept-source-agreements --accept-package-agreements --custom ' /quiet ADDLOCAL=Server SET_USEVNCAUTHENTICATION=1 VALUE_OF_USEVNCAUTHENTICATION=1 SET_PASSWORD=1 VALUE_OF_PASSWORD=admin123' "
+#send_line_to_vm "winget install -e --id GlavSoft.TightVNC --accept-source-agreements --accept-package-agreements --custom ' /quiet ADDLOCAL=Server SET_USEVNCAUTHENTICATION=1 VALUE_OF_USEVNCAUTHENTICATION=1 SET_PASSWORD=1 VALUE_OF_PASSWORD=admin123' "
 #winget install -e --id GlavSoft.TightVNC --accept-source-agreements --accept-package-agreements --custom "/quiet SET_USEVNCAUTHENTICATION=1 VALUE_OF_USEVNCAUTHENTICATION=1 SET_PASSWORD=1 VALUE_OF_PASSWORD=mainpass"
 #msiexec /i tightvnc-2.5.2-setup-64bit.msi /quiet /norestart ADDLOCAL=Server
 #msiexec.exe /i tightvnc-2.5.2-setup-64bit.msi /quiet /norestart SET_USEVNCAUTHENTICATION=1 VALUE_OF_USEVNCAUTHENTICATION=1 SET_PASSWORD=1 VALUE_OF_PASSWORD=mainpass
