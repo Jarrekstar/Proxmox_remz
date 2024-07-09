@@ -174,8 +174,24 @@ close_window
 open_admin_ps
 send_line_to_vm "Invoke-WebRequest -Uri https://raw.githubusercontent.com/remz1337/Proxmox/remz/misc/powershell/Install-TightVNC.ps1 -OutFile Install-TightVNC.ps1"
 sleep 5
-send_line_to_vm "set-executionpolicy remotesigned -Scope Process -Force"
+#send_line_to_vm "set-executionpolicy remotesigned -Scope Process -Force"
+send_line_to_vm "set-executionpolicy -Scope Process -Force -ExecutionPolicy Bypass"
 sleep 2
 send_line_to_vm ".\Install-TightVNC.ps1"
 sleep 120
-close_window
+#close_window
+echo -e "${DGN}Installed TightVNC server. Password: ${BGN}admin123${CL}"
+
+#Install Nvidia Drivers
+send_line_to_vm "Invoke-WebRequest -Uri https://raw.githubusercontent.com/remz1337/Proxmox/remz/misc/powershell/Install-Nvidia.ps1 -OutFile Install-Nvidia.ps1"
+sleep 5
+#send_line_to_vm "set-executionpolicy remotesigned -Scope Process -Force"
+#send_line_to_vm "set-executionpolicy -Scope Process -Force -ExecutionPolicy Bypass"
+#sleep 2
+send_line_to_vm ".\Install-Nvidia.ps1"
+sleep 600
+#close_window
+echo -e "${DGN}Installed Nvidia Driver.${CL}"
+
+qm set $VMID -vga none -hostpci0 0000:07:00,pcie=1,x-vga=1 -sata0 none -sata1 none -boot order="scsi0"
+echo -e "${DGN}Reboot Windows gaming VM manually once setup is complete.${CL}"
