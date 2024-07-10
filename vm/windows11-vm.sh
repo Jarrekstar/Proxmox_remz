@@ -561,7 +561,11 @@ for i in {0..2}; do
   eval DISK${i}_REF=${STORAGE}:${DISK_REF:-}${!disk}
 done
 
-msg_info "Creating a Windows 11 VM"
+msg_info "Creating a Windows 11 VM with GPU passthrough"
+
+source <(curl -s https://raw.githubusercontent.com/remz1337/Proxmox/remz/misc/nvidia.func)
+pci_num=$(select_nvidia_gpu_vm)
+
 #pvesm alloc $STORAGE $VMID $DISK0 4M 1>&/dev/null
 #pvesm alloc $STORAGE $VMID $DISK1 ${DISK_SIZE}G 1>&/dev/null
 #pvesm alloc $STORAGE $VMID $DISK2 4M 1>&/dev/null
@@ -574,7 +578,7 @@ qm create $VMID -agent 1${MACHINE} -bios ovmf${CPU_TYPE} -cores $CORE_COUNT -cpu
   -sata1 /var/lib/vz/template/iso/${VIRTIO_ISO},media=cdrom \
   -smbios1 uuid=$(od -x /dev/urandom | head -1 | awk '{OFS="-"; print $2$3,$4,$5,$6,$7$8$9}') \
   -boot order="sata0;scsi0" \
-  -hostpci0 0000:07:00,pcie=1
+  -hostpci0 0000:${pci_num},pcie=1 \
   -description "<div align='center'><a href='https://Helper-Scripts.com'><img src='https://raw.githubusercontent.com/tteck/Proxmox/main/misc/images/logo-81x112.png'/></a>
 
   # Windows 11 VM

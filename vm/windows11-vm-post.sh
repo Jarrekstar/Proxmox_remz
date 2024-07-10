@@ -193,5 +193,8 @@ sleep 600
 #close_window
 echo -e "${DGN}Installed Nvidia Driver.${CL}"
 
-qm set $VMID -vga none -hostpci0 0000:07:00,pcie=1,x-vga=1 -sata0 none -sata1 none -boot order="scsi0"
+PCI_NUM=$(qm config $VMID | grep "hostpci0" | cut -d " " -f2)
+PCI_NUM=${PCI_NUM%%,*}
+
+qm set $VMID -vga none -hostpci0 ${PCI_NUM},pcie=1,x-vga=1 -sata0 none -sata1 none -boot order="scsi0"
 echo -e "${DGN}Reboot Windows gaming VM manually once setup is complete.${CL}"
