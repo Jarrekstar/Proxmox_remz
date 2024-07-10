@@ -178,7 +178,7 @@ sleep 5
 send_line_to_vm "set-executionpolicy -Scope Process -Force -ExecutionPolicy Bypass"
 sleep 2
 send_line_to_vm ".\Install-TightVNC.ps1"
-sleep 120
+sleep 200
 #close_window
 echo -e "${DGN}Installed TightVNC server. Password: ${BGN}admin123${CL}"
 
