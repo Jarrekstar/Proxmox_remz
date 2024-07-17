@@ -77,4 +77,4 @@ $STD apt-get -y autoremove
 $STD apt-get -y autoclean
 msg_ok "Cleaned"
 
-echo -e "Don't forget to edit the Scrutiny config file (${GN}/opt/scrutiny/config/scrutiny.yaml${CL}) and reboot."
+echo -e "Don't forget to ${GN}deploy the collector on the host${CL} and edit the Scrutiny config file (${GN}/opt/scrutiny/config/scrutiny.yaml${CL}) and reboot."
