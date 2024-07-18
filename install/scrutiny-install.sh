@@ -14,15 +14,8 @@ setting_up_container
 network_check
 update_os
 
-if (whiptail --backtitle "Proxmox VE Helper Scripts" --title "Install Scrutiny" --yesno "This script will create a new LXC for the Scrutiny web app and install the Scrutiny collector on the host. Do you wish to continue?" 10 58); then
-  echo -e "${DGN}Proceeding with Scrutiny installation${CL}"
-else
-  echo -e "${RD}Scrutiny installation aborted${CL}"
-  exit-script
-fi
-
 msg_info "Installing Dependencies (Patience)"
-$STD apt-get install -y {curl,sudo,mc,glibc}
+$STD apt-get install -y {curl,sudo,mc,libc6}
 msg_ok "Installed Dependencies"
 
 msg_info "Installing Scrutiny (web app and API)"
