@@ -86,12 +86,12 @@ install_collector() {
   if [[ ! -f /etc/systemd/system/scrutiny.service ]]; then
     #Not found, install
 	msg_info "Installing Scrutiny Collector"
-    apt-get install -y smartmontools
+    apt-get install -y smartmontools &>/dev/null
     mkdir -p /opt/scrutiny/bin
     mkdir -p /opt/scrutiny/config
   
     cd /opt/scrutiny/config
-    wget -O collector.yaml https://raw.githubusercontent.com/AnalogJ/scrutiny/master/example.collector.yaml
+    wget -O collector.yaml https://raw.githubusercontent.com/AnalogJ/scrutiny/master/example.collector.yaml &>/dev/null
     # #Enable API endpoint
     cat <<EOF >>/opt/scrutiny/config/collector.yaml
 api:
@@ -99,7 +99,7 @@ api:
 EOF
 
     cd /opt/scrutiny/bin
-    wget "https://github.com/AnalogJ/scrutiny/releases/latest/download/scrutiny-collector-metrics-linux-amd64"
+    wget "https://github.com/AnalogJ/scrutiny/releases/latest/download/scrutiny-collector-metrics-linux-amd64" &>/dev/null
     chmod +x scrutiny-collector-metrics-linux-amd64
 
     cat <<EOF >/etc/systemd/system/scrutiny.service
@@ -133,13 +133,13 @@ EOF
     #Already installed, update
 	msg_ok "Scrutiny Collector already installed. It will be updated."
     msg_info "Stopping Scrutiny Collector"
-    systemctl disable --now scrutiny.timer
+    systemctl disable -q --now scrutiny.timer
     msg_ok "Stopped Scrutiny Collector"
 
     msg_info "Updating Scrutiny Collector"
     cd /opt/scrutiny/bin
-    rm -rf scrutiny-collector-metrics-linux-amd64
-    wget "https://github.com/AnalogJ/scrutiny/releases/latest/download/scrutiny-collector-metrics-linux-amd64"
+    rm -rf scrutiny-collector-metrics-linux-amd64 &>/dev/null
+    wget "https://github.com/AnalogJ/scrutiny/releases/latest/download/scrutiny-collector-metrics-linux-amd64" &>/dev/null
     chmod +x scrutiny-collector-metrics-linux-amd64
     msg_ok "Updated Scrutiny Collector"
 
