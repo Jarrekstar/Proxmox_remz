@@ -81,6 +81,74 @@ function update_script() {
   msg_ok "Started Scrutiny"
 }
 
+install_collector() {
+  #header_info
+  if [[ ! -f /etc/systemd/system/scrutiny.service ]]; then
+    #Not found, install
+	msg_info "Installing Scrutiny Collector"
+    apt-get install -y smartmontools
+    mkdir -p /opt/scrutiny/bin
+    mkdir -p /opt/scrutiny/config
+  
+    cd /opt/scrutiny/config
+    wget -O collector.yaml https://raw.githubusercontent.com/AnalogJ/scrutiny/master/example.collector.yaml
+    # #Enable API endpoint
+    cat <<EOF >>/opt/scrutiny/config/collector.yaml
+api:
+  endpoint: 'http://${IP}:8080'
+EOF
+
+    cd /opt/scrutiny/bin
+    wget "https://github.com/AnalogJ/scrutiny/releases/latest/download/scrutiny-collector-metrics-linux-amd64"
+    chmod +x scrutiny-collector-metrics-linux-amd64
+
+    cat <<EOF >/etc/systemd/system/scrutiny.service
+[Unit]
+Description="Scrutiny Collector service"
+Requires=scrutiny.timer
+After=syslog.target network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/scrutiny
+ExecStart=/opt/scrutiny/bin/scrutiny-collector-metrics-linux-amd64 run --config /opt/scrutiny/config/collector.yaml
+EOF
+
+    cat <<EOF >/etc/systemd/system/scrutiny.timer
+[Unit]
+Description="Timer for the scrutiny.service"
+
+[Timer]
+Unit=scrutiny.service
+OnCalendar=*:0/15
+
+[Install]
+WantedBy=timers.target
+EOF
+
+    systemctl enable -q --now scrutiny.timer
+	msg_ok "Installed Scrutiny Collector"
+	msg_ok "Don't forget to update the the configuration in ${GN}/opt/scrutiny/config/collector.yaml${CL}"
+  else
+    #Already installed, update
+	msg_ok "Scrutiny Collector already installed. It will be updated."
+    msg_info "Stopping Scrutiny Collector"
+    systemctl disable --now scrutiny.timer
+    msg_ok "Stopped Scrutiny Collector"
+
+    msg_info "Updating Scrutiny Collector"
+    cd /opt/scrutiny/bin
+    rm -rf scrutiny-collector-metrics-linux-amd64
+    wget "https://github.com/AnalogJ/scrutiny/releases/latest/download/scrutiny-collector-metrics-linux-amd64"
+    chmod +x scrutiny-collector-metrics-linux-amd64
+    msg_ok "Updated Scrutiny Collector"
+
+    msg_info "Starting Scrutiny Collector"
+    systemctl enable -q --now scrutiny.timer
+    msg_ok "Started Scrutiny Collector"
+  fi
+}
+
 start
 build_container
 description
@@ -92,3 +160,17 @@ msg_ok "Set Container to Normal Resources"
 msg_ok "Completed Successfully!\n"
 echo -e "${APP} should be reachable by going to the following URL.
          ${BL}http://${IP}:8080${CL} \n"
+		 
+		 
+#header_info
+echo -e "\nDo you wish to install/update Scrutiny Collector?\n"
+while true; do
+  read -p "Start the Scrutiny Collector Install/Update Script (y/n)?" yn
+  case $yn in
+  [Yy]*) break ;;
+  [Nn]*) clear; exit ;;
+  *) echo "Please answer yes or no." ;;
+  esac
+done
+
+install_collector
