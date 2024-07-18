@@ -168,7 +168,7 @@ while true; do
   read -p "Start the Scrutiny Collector Install/Update Script (y/n)?" yn
   case $yn in
   [Yy]*) break ;;
-  [Nn]*) clear; exit ;;
+  [Nn]*) exit ;;
   *) echo "Please answer yes or no." ;;
   esac
 done
