@@ -61,7 +61,7 @@ function update_script() {
     exit
   fi
   
-  FRIGATE=$(curl -Ls -o /dev/null -w %{url_effective} https://github.com/blakeblackshear/frigate/releases/latest)
+  FRIGATE=$(curl -Ls -o /dev/null -w %{url_effective} https://github.com/blakeblackshear/frigate/releases/tag/v0.14.0-rc1)
   FRIGATE=${FRIGATE##*/}
   
   GO2RTC=$(curl -s https://api.github.com/repos/AlexxIT/go2rtc/releases/latest | grep "tag_name" | awk '{print substr($2, 2, length($2)-3) }')
